@@ -5,18 +5,21 @@ class Searchbar extends Component {
     query: '',
   };
 
+  
+
   changeSearchInput  = (evt) => {
-    this.setState({ query: evt.target.value });
+    this.setState({ query: evt.target.value.toLowerCase() });
   };
 
   formSubmit = evt => {
+    evt.preventDefault();
 
     if (this.state.query.trim() === '') {
         alert("Enter a search term")
         return
     }
 
-    evt.preventDefault();
+    
     
     this.props.onSearhFormSubmit(this.state.query)
    
