@@ -1,4 +1,4 @@
-const ImageGalleryItem = ({ id, tags, ImgUrl, onImageClick }) => {
+const ImageGalleryItem = ({ index, tags, ImgUrl, onImageClick }) => {
   return (
     <div>
       <li className="ImageGalleryItem">
@@ -6,7 +6,7 @@ const ImageGalleryItem = ({ id, tags, ImgUrl, onImageClick }) => {
           className="ImageGalleryItem-image"
           src={ImgUrl}
           alt={tags}
-          onClick={() => onImageClick(id)}
+          onClick={() => onImageClick(index)}
         />
       </li>
     </div>
