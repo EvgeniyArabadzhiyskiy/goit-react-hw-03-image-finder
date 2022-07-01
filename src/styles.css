@@ -76,7 +76,7 @@ img {
   width: 48px;
   height: 48px;
   border: 0;
-  background-image: url('https://image.flaticon.com/icons/svg/149/149852.svg');
+  /* background-image: url('https://image.flaticon.com/icons/svg/149/149852.svg'); */
   background-size: 40%;
   background-repeat: no-repeat;
   background-position: center;
@@ -111,6 +111,7 @@ img {
   outline: none;
   padding-left: 4px;
   padding-right: 4px;
+  line-height: 1.5;
 }
 
 .SearchForm-input::placeholder {
@@ -173,11 +174,8 @@ img {
 }
 
 .Modal {
-  width: 800px;
-  height: 600px;
-  /* max-width: calc(100vw - 48px);
-  max-height: calc(100vh - 24px); */
-  background-color: #fff;
+  max-width: calc(100vw - 48px);
+  /* max-height: calc(100vh - 24px); */
 }
 
 /*
