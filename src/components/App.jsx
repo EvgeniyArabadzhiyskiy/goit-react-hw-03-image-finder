@@ -1,4 +1,4 @@
-import axios from 'axios';
+// import axios from 'axios';
 import { Circles } from 'react-loader-spinner';
 import { Component } from 'react';
 import Button from './Button/Button';
@@ -6,6 +6,7 @@ import Button from './Button/Button';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Searchbar from './Searchbar/Searchbar';
 import Modal from './Modal/Modal';
+import fetchImages from 'service/pixabay-api';
 
 class App extends Component {
   state = {
@@ -19,22 +20,23 @@ class App extends Component {
   };
 
   async componentDidUpdate(prevProps, prevState) {
-    if (
-      this.state.query !== prevState.query ||
-      this.state.page !== prevState.page
-    ) {
+    const searchQuery = this.state.query;
+    const searchPage = this.state.page;
+
+    if (searchQuery !== prevState.query || searchPage !== prevState.page) {
       // this.setState({ isloading: true });
       this.setState({ status: 'pending' });
+
       try {
-        const response = await axios(
-          `https://pixabay.com/api/?key=26298929-dc8db63efad38f2c4177a32d6&q=${this.state.query}&image_type=photo&page=${this.state.page}&per_page=12`
-        );
+        const imagesHits = await fetchImages(searchQuery, searchPage);
+
         this.setState(prevState => ({
-          articles: [...prevState.articles, ...response.data.hits],
+          articles: [...prevState.articles, ...imagesHits],
           status: 'resolved'
         }));
-      } catch (error) {}
-      //  finally { this.setState({ isloading: false });}
+      } catch (error) {console.log(error)} 
+      // finally {this.setState({ isloading: false })}
+
     }
   }
 
@@ -56,49 +58,49 @@ class App extends Component {
   };
 
   render() {
-    const { showModal, activIndex, articles, page,  status } = this.state; // isloading
+    const { showModal, activIndex, articles, page, status } = this.state; // isloading status
 
-      if (status === 'idle') {
-        return (
-          <div className="App" >
+
+    if (status === 'idle') {
+      return (
+        <div className="App" >
+        <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
+        </div>
+      );
+    }
+    
+    if (status === 'pending') {
+      return (
+        <div className="App">
           <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
-          </div>
-        );
-      }
-
-      if (status === 'pending') {
-        return (
-          <div className="App">
-            <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
-            <Circles color="#ff0095" height={80} width={80} />
-            <ImageGallery articles={articles} onImageClick={this.handleImageClick} />
-          </div>
-        );
-      }
-
-      if (status === 'resolved') {
-        return (
-          <div className="App">
-            <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
-            <ImageGallery articles={articles} onImageClick={this.handleImageClick} />
-            <Button onClickIncrementBtn={this.handleBtnIncrement} />
-            {showModal && (
-            <Modal onCloseModal={this.toggleModal}>
-              <img src={activIndex.largeImageURL} alt={activIndex.tags} />
-            </Modal>
-            )}
-          </div>
-        );
-      }
-
-      
+          <Circles color="#ff0095" height={80} width={80} />
+          <ImageGallery articles={articles} onImageClick={this.handleImageClick} />
+        </div>
+      );
+    }
     
-    
+    if (status === 'resolved') {
+      return (
+        <div className="App">
+          <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
+          <ImageGallery articles={articles} onImageClick={this.handleImageClick} />
+          <Button onClickIncrementBtn={this.handleBtnIncrement} />
+          {showModal && (
+          <Modal onCloseModal={this.toggleModal}>
+            <img src={activIndex.largeImageURL} alt={activIndex.tags} />
+          </Modal>
+          )}
+        </div>
+      );
+    }
+
+
+
     // return (
     //   // <Box width="1200px" m="0 auto" p="0 20px">
     //   <div className="App">
     //     <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
-    //     {/* {isloading && <Circles color="#ff0095" height={80} width={80} />} */}
+    //     {isloading && <Circles color="#ff0095" height={80} width={80} />}
     //     <ImageGallery
     //       articles={articles}
     //       onImageClick={this.handleImageClick}
@@ -118,3 +120,38 @@ class App extends Component {
 }
 
 export default App;
+
+// if (status === 'idle') {
+//   return (
+//     <div className="App" >
+//     <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
+//     </div>
+//   );
+// }
+
+// if (status === 'pending') {
+//   return (
+//     <div className="App">
+//       <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
+//       <Circles color="#ff0095" height={80} width={80} />
+//       <ImageGallery articles={articles} onImageClick={this.handleImageClick} />
+//     </div>
+//   );
+// }
+
+// if (status === 'resolved') {
+//   return (
+//     <div className="App">
+//       <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
+//       <ImageGallery articles={articles} onImageClick={this.handleImageClick} />
+//       <Button onClickIncrementBtn={this.handleBtnIncrement} />
+//       {showModal && (
+//       <Modal onCloseModal={this.toggleModal}>
+//         <img src={activIndex.largeImageURL} alt={activIndex.tags} />
+//       </Modal>
+//       )}
+//     </div>
+//   );
+// }
+
+
