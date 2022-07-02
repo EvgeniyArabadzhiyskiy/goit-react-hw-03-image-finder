@@ -9,7 +9,7 @@ async function fetchImages(query, page) {
     `${BASE_URL}?key=${API_KEY}&q=${query}&${OPTIONS}&page=${page}&per_page=12`
   );
 
-  return response.data.hits;
+  return response.data;
 }
 
 export default fetchImages;

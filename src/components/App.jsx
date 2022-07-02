@@ -10,6 +10,7 @@ import Button from './Button/Button';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import fetchImages from 'service/pixabay-api';
+import Notification from './Notification/Notification';
 
 class App extends Component {
   state = {
@@ -22,6 +23,8 @@ class App extends Component {
     error: null,
   };
 
+   totalHits = null
+
   async componentDidUpdate(_, prevState) {
     const searchQuery = this.state.query;
     const searchPage = this.state.page;
@@ -30,8 +33,12 @@ class App extends Component {
       
       try {
         this.setState({ isloading: true });
-        const imagesHits = await fetchImages(searchQuery, searchPage);
+        const imageData = await fetchImages(searchQuery, searchPage);
 
+        this.totalHits = imageData.total
+
+        const imagesHits = imageData.hits;
+        
         if (imagesHits.length === 0) {
           toast.warning("No results were found for your search, please try something else.",
            {transition: Zoom})
@@ -69,6 +76,7 @@ class App extends Component {
 
   render() {
     const { showModal, activIndex, articles, page, isloading, error } = this.state; 
+    const countImages = articles.length
    
     if (error) {
       toast.error(this.state.error.message)
@@ -81,18 +89,18 @@ class App extends Component {
         
         {isloading && <Loader />}
         
-        {articles.length > 0 && (
-        <>
-          <ImageGallery articles={articles}  onImageClick={this.handleImageClick} />
-          <Button onLoadMore={this.handleLoadMore} /> 
-        </>)}
-        
+        {countImages > 0 && <ImageGallery articles={articles}  onImageClick={this.handleImageClick} />}
+
+        { (countImages > 0 && countImages !== this.totalHits) && <Button onLoadMore={this.handleLoadMore} />}
+
+        {countImages === this.totalHits && <Notification /> }
+
         {showModal && (
           <Modal onCloseModal={this.toggleModal}>
             <img src={activIndex.largeImageURL} alt={activIndex.tags} />
           </Modal>
         )}
-        
+
         <ToastContainer autoClose={3000}  position="top-center" theme="colored" pauseOnHover  />
       </Box>
       
