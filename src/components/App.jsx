@@ -21,7 +21,6 @@ class App extends Component {
     activIndex: null,
     isloading: false,
     error: null,
-    status: 'idle',
   };
 
   totalHits = null;
@@ -32,8 +31,7 @@ class App extends Component {
 
     if (searchQuery !== prevState.query || searchPage !== prevState.page) {
       try {
-        // this.setState({ isloading: true });
-        this.setState({ status: 'pending' });
+        this.setState({ isloading: true, error: null });
         const imageData = await fetchImages(searchQuery, searchPage);
 
         this.totalHits = imageData.total;
@@ -43,22 +41,23 @@ class App extends Component {
         if (imagesHits.length === 0) {
           toast.warning(
             'No results were found for your search, please try something else.',
-            { transition: Zoom }
+            { transition: Zoom,  position: "top-center" }
           );
           return;
         }
 
         this.setState(({ articles }) => ({
           articles: [...articles, ...imagesHits],
-          status: 'resolved',
         }));
       } catch (error) {
         this.setState({
-          error: new Error('Sorry something went wrong'),
-          status: 'rejected',
+          error: new Error(`Sorry something went wrong. ${error.message}`),
         });
+        
+        toast.error(`Sorry something went wrong. ${error.message}`);
+      } finally {
+        this.setState({ isloading: false });
       }
-      // finally {this.setState({ isloading: false });}
     }
   }
 
@@ -80,86 +79,99 @@ class App extends Component {
   };
 
   render() {
-    const { showModal, activIndex, articles, page,  error, status } = this.state;  //isloading
+    const { showModal, activIndex, articles, page, error, isloading } =
+      this.state;
     const countImages = articles.length;
 
-    if (error) {
-      toast.error(this.state.error.message);
-    }
+    return (
+      <Box display="grid" gridAutoColumns="1fr" gridGap="16px" pb={6}>
 
-    if (status === 'idle') {
-      return (
-        <Box display="grid" gridAutoColumns="1fr" gridGap="16px" pb={6}>
-          <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
-        </Box>
-      );
-    }
+        <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
 
-    if (status === 'pending') {
-      return (
-        <Box display="grid" gridAutoColumns="1fr" gridGap="16px" pb={6}>
-          <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
-           <Loader />
-          <ImageGallery
-            articles={articles}
-            onImageClick={this.handleImageClick}
-          />
-          <ToastContainer autoClose={3000}  position="top-center" theme="colored" pauseOnHover  />
-        </Box>
-      );
-    }
+        {isloading && <Loader />}
 
-    if (status === 'resolved') {
-      return (
-        <Box display="grid" gridAutoColumns="1fr" gridGap="16px" pb={6}>
-          <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
-          {countImages > 0 && (
-            <ImageGallery
-              articles={articles}
-              onImageClick={this.handleImageClick}
-            />
-          )}
+        {error && (<h1 style={{ color: 'orangered', textAlign: 'center' }}>{error.message}</h1>)}
 
-          {countImages > 0 && countImages !== this.totalHits && (
-            <Button onLoadMore={this.handleLoadMore} />
-          )}
-          {countImages === this.totalHits && <Notification /> }
-          {showModal && (
-            <Modal onCloseModal={this.toggleModal}>
-              <img src={activIndex.largeImageURL} alt={activIndex.tags} />
-            </Modal>
-          )}
-          
-        </Box>
-      );
-    }
+        {countImages > 0 && (<ImageGallery articles={articles}  onImageClick={this.handleImageClick} />)}
 
-    // return (
+        {countImages > 0 && countImages !== this.totalHits && (
+          <Button onLoadMore={this.handleLoadMore} />
+        )}
 
-    //   <Box display="grid" gridAutoColumns="1fr" gridGap="16px" pb={6} >
-    //     <Searchbar  onSearhFormSubmit={this.handleFormSubmit} page={page} />
+        {countImages === this.totalHits && <Notification />}
 
-    //     {isloading && <Loader />}
+        {showModal && (
+          <Modal onCloseModal={this.toggleModal}>
+            <img src={activIndex.largeImageURL} alt={activIndex.tags} />
+          </Modal>
+        )}
 
-    //     {countImages > 0 && <ImageGallery articles={articles}  onImageClick={this.handleImageClick} />}
-
-    //     { (countImages > 0 && countImages !== this.totalHits) && <Button onLoadMore={this.handleLoadMore} />}
-
-    //     {countImages === this.totalHits && <Notification /> }
-
-    //     {showModal && (
-    //       <Modal onCloseModal={this.toggleModal}>
-    //         <img src={activIndex.largeImageURL} alt={activIndex.tags} />
-    //       </Modal>
-    //     )}
-
-    //     <ToastContainer autoClose={3000}  position="top-center" theme="colored" pauseOnHover  />
-    //   </Box>
-
-    // );
+        <ToastContainer autoClose={3000} theme="colored"pauseOnHover />
+      </Box>
+    );
   }
 }
 
 export default App;
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// if (status === 'idle') {
+//   return (
+//     <Box display="grid" gridAutoColumns="1fr" gridGap="16px" pb={6}>
+//       <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
+//     </Box>
+//   );
+// }
+
+// if (status === 'pending') {
+//   return (
+//     <Box display="grid" gridAutoColumns="1fr" gridGap="16px" pb={6}>
+//       <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
+//        <Loader />
+//       <ImageGallery
+//         articles={articles}
+//         onImageClick={this.handleImageClick}
+//       />
+//       <ToastContainer autoClose={3000}  position="top-center" theme="colored" pauseOnHover  />
+//     </Box>
+//   );
+// }
+
+// if (status === 'resolved') {
+//   return (
+//     <Box display="grid" gridAutoColumns="1fr" gridGap="16px" pb={6}>
+//       <Searchbar onSearhFormSubmit={this.handleFormSubmit} page={page} />
+//       {countImages > 0 && (
+//         <ImageGallery
+//           articles={articles}
+//           onImageClick={this.handleImageClick}
+//         />
+//       )}
+
+//       {countImages > 0 && countImages !== this.totalHits && (
+//         <Button onLoadMore={this.handleLoadMore} />
+//       )}
+//       {countImages === this.totalHits && <Notification /> }
+//       {showModal && (
+//         <Modal onCloseModal={this.toggleModal}>
+//           <img src={activIndex.largeImageURL} alt={activIndex.tags} />
+//         </Modal>
+//       )}
+
+//     </Box>
+//   );
+// }
